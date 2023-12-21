@@ -1,0 +1,15 @@
+# Spacefile Docs: https://go.deta.dev/docs/spacefile/v0
+# public_routes: ["/*"]
+# public_routes:
+#   - "/test" # exact match
+#   - "/public/*" # wildcards
+#   - "/api/*/docs" # wildcards can be placed anywhere
+
+v: 0
+micros:
+  - name: PythonCmsRestAPI
+    src: ./
+    engine: python3.9
+    primary: true
+    public: true
+    
