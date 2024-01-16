@@ -211,33 +211,67 @@ async def signInUser(request: Request):
 
 @app.post("/specific-user", tags=['users'])
 async def specificUser(request: Request):
-    print("specific-user")
-
+    #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
     dataObj = json.loads(dataObj) # parse json
-    # json.dumps(dataObj) # convert to json
-    print(dataObj)
+    # dataObj = json.dumps(dataObj) # convert to json
+    # print(dataObj)
 
+    #variables
     username = dataObj["username"]
     token = dataObj["token"]
     lastLogin = dataObj["lastLogin"]
 
-    test = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
-    sections = test[1]["items"][0]["sections"]
-    categories = test[1]["items"][0]["categories"]
-    data = test[1]["items"][0]["data"]
-    username = test[1]["items"][0]["username"]
-    createdAt = test[1]["items"][0]["createdAt"]
-    lastLogin = test[1]["items"][0]["lastLogin"]
+    #log
+    print("specific-user: " + username)
 
-    return {
-                "status": "fetch specific user successful",
-                "username": username, 
-                "createdAt": createdAt, 
-                "lastLogin": lastLogin, 
-                "sections": sections, 
-                "categories": categories, 
-                "data": data
-            }
+    #fetch account data
+    dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
+    accountObj = dbRequestAccountData[1]["items"][0]
+    accountUsername = accountObj["username"]
+    accountCreatedAt = accountObj["createdAt"]
+    accountLastLogin = accountObj["lastLogin"]
+    accountSections = accountObj["sections"]
+    accountCategories = accountObj["categories"]
+    accountData = accountObj["data"]
+
+    return { "status": "fetch specific user successful",
+             "username": accountUsername, 
+             "createdAt": accountCreatedAt, 
+             "lastLogin": accountLastLogin, 
+             "sections": accountSections, 
+             "categories": accountCategories, 
+             "data": accountData }
+
+
+@app.post("/update-user-data", tags=['users'])
+async def updateUserData(request: Request):
+    #parse request data
+    dataObj = await request.body()
+    dataObj = dataObj.decode()
+    dataObj = json.loads(dataObj) # parse json  
+    # dataObj = json.dumps(dataObj) # convert to json
+
+    #variables
+    userInfo = dataObj[0]
+    newData = json.loads(dataObj[1])
+    username = userInfo["username"]
+    token = userInfo["token"]
+    lastLogin = userInfo["lastLogin"]
+    # print(userInfo)
+    # print(newData)
+
+    #log
+    print("update-user-data: " + username)
+
+    #fetch account data
+    dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
+    accountObj = dbRequestAccountData[1]["items"][0]
+    accountKey = accountObj["key"]
+    
+    #update account data
+    try: dbUsers.update({"data": newData}, accountKey); return { "status": "update user data successful" }
+    except: return { "status": "update user data failed" }
+   
     
