@@ -273,5 +273,76 @@ async def updateUserData(request: Request):
     #update account data
     try: dbUsers.update({"data": newData}, accountKey); return { "status": "update user data successful" }
     except: return { "status": "update user data failed" }
+
+
+@app.post("/update-user-categories", tags=['users'])
+async def updateUserCategories(request: Request):
+    #parse request data
+    dataObj = await request.body()
+    dataObj = dataObj.decode()
+    dataObj = json.loads(dataObj) # parse json  
+    # dataObj = json.dumps(dataObj) # convert to json
+    
+    #variables
+    userInfo = dataObj[0]
+    newCategories = json.loads(dataObj[1])
+    newData = json.loads(dataObj[2])
+    username = userInfo["username"]
+    token = userInfo["token"]
+    lastLogin = userInfo["lastLogin"]
+    # print(userInfo)
+    # print(newCategories)
+    # print(newData)
+
+    #log
+    print("update-user-categories: " + username)
+
+    #fetch account data
+    dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
+    accountObj = dbRequestAccountData[1]["items"][0]
+    accountKey = accountObj["key"]
+    
+    #update account categories & data
+    try: 
+        dbUsers.update({"categories": newCategories}, accountKey); 
+        dbUsers.update({"data": newData}, accountKey); 
+        return { "status": "update user categories successful" }
+        
+    except: 
+        return { "status": "update user categories failed" }
+
+
+@app.post("/update-user-sections", tags=['users'])
+async def updateUserSections(request: Request):
+    #parse request data
+    dataObj = await request.body()
+    dataObj = dataObj.decode()
+    dataObj = json.loads(dataObj) # parse json  
+    # dataObj = json.dumps(dataObj) # convert to json
+    
+    #variables
+    userInfo = dataObj[0]
+    newSections = json.loads(dataObj[1])
+    username = userInfo["username"]
+    token = userInfo["token"]
+    lastLogin = userInfo["lastLogin"]
+    # print(userInfo)
+    # print(newSections)
+
+    #log
+    print("update-user-sections: " + username)
+
+    #fetch account data
+    dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
+    accountObj = dbRequestAccountData[1]["items"][0]
+    accountKey = accountObj["key"]
+    
+    #update account sections & data
+    try: 
+        dbUsers.update({"sections": newSections}, accountKey); 
+        return { "status": "update user sections successful" }
+        
+    except: 
+        return { "status": "update user sections failed" }
    
     
