@@ -30,7 +30,8 @@ dbUsers = dbRoot.Base("users")
 
 #------ root ------#
 @app.get("/", tags=['root']) #response_class=JSONResponse #ORJSONResponse([{"root": "there is nothing here"}])
-async def root(): return {"data": "there is nothing here"}
+async def root(): 
+    return {"data": "there is nothing here"}
 
 
 
@@ -145,23 +146,71 @@ async def addUser(request: Request):
     #set user obj
     dataObj["createdAt"] = str(datetime.datetime.now())[:-7]
     dataObj["id"] = str(uuid.uuid4()).replace("-", "")
+    dataObj["sections"] = []
+    dataObj["categories"] = []
+    dataObj["data"] = []
+    dataObj["settings"] = {
+        "buttonAbout": "false",
+        "buttonAboutText": "",
+        "buttonContact": "false",
+        "buttonFullscreen": "false",
+        "buttonSearch": "false",
+        "colorLoadingScreen": "#000000",
+        "colorNavBackground": "#000000",
+        "colorNavIcons": "#000000",
+        "colorSectionsBackground": "#000000",
+        "colorText": "#000000",
+        "loadingScreen": "false",
+        "loadingScreenUrl": "",
+        "modeSlideshow": "false",
+        "navIconSize": "medium",
+        "navIconType": "numbers",
+        "navPosition": "left",
+        "pageEnd": "false",
+        "pageEndText": "",
+        "pageEndTitle": "",
+        "pageIndex": "false",
+        "pageStart": "false",
+        "pageStartText": "",
+        "pageStartTitle": "",
+        "sectionBackgroundImage": "false",
+        "sectionBackgroundImageUrl": "",
+        "siteAccess": "public",
+        "sitePasswordProtected": "false",
+        "sitePasswordProtectedPassword": "",
+        "textSize": "medium",
+        "textStyle": "normal"
+    }
     dataObj["token"] = ""
-    dataObj["sections"] = "[]"
-    dataObj["categories"] = "[]"
-    dataObj["data"] = "[]"
+    dataObj["domain"] = ""
+    dataObj["email"] = ""
+    dataObj["name"] = ""
+    dataObj["phone"] = ""
+    dataObj["country"] = ""
+    dataObj["accountStatus"] = "active"
     
     #check total users
     dbUsersObj = dbUsers._fetch() 
     totalUsers = dbUsersObj[1]["paging"]["size"]
+    
+    #log
     print("Accounts = " + str(totalUsers))
-    if(totalUsers > 100): return { "data": "user registration is closed"}
 
-    #check if user exists
+    #check forbidden name 
+    if(forbiddenNameCheck(dataObj["username"]) == False): return { "status": "username is unavailable" }
+
+    #check forbidden character
+    if(forbiddenCharacterCheck(dataObj["username"]) == False): return { "status": "username is unavailable" }
+
+    #check if registration is closed
+    if(totalUsers > 100): return { "status": "user registration is closed"}
+
+    #check if username is taken
     for user in dbUsersObj[1]["items"]:
-        if(dataObj["username"] == user["username"]): return { "data": "username is taken"}
+        if(dataObj["username"] == user["username"]): return { "status": "username is taken"}
 
-    #save user to db
-    dbUsers.insert(dataObj); return {"data": "user added successfully"} #response
+    #update db
+    dbUsers.insert(dataObj); return {"status": "user added successfully"} #response
     
 
 @app.post("/sign-in-user", tags=['users'])
@@ -235,14 +284,66 @@ async def specificUser(request: Request):
     accountSections = accountObj["sections"]
     accountCategories = accountObj["categories"]
     accountData = accountObj["data"]
+    accountSetttings = accountObj["settings"]
+    accountDomain = accountObj["domain"]
+    accountEmail = accountObj["email"]
+    accountName = accountObj["name"]
+    accountCountry = accountObj["country"]
+    accountPhone = accountObj["phone"]
+    accountStatus = accountObj["accountStatus"]
+    accountCredentials = {
+        "username": accountUsername,
+        "domain": accountDomain,
+        "email": accountEmail,
+        "name": accountName,
+        "country": accountCountry,
+        "phone": accountPhone
+    }
 
-    return { "status": "fetch specific user successful",
+    return { 
+             "status": "fetch specific user successful",
              "username": accountUsername, 
              "createdAt": accountCreatedAt, 
              "lastLogin": accountLastLogin, 
              "sections": accountSections, 
              "categories": accountCategories, 
-             "data": accountData }
+             "data": accountData,
+             "settings": accountSetttings,
+             "credentials": accountCredentials,
+             "accountStatus": accountStatus
+           }
+
+
+@app.post("/specific-domain", tags=['users'])
+async def specificUser(request: Request):
+    #parse request data
+    dataObj = await request.body()
+    dataObj = dataObj.decode()
+    dataObj = json.loads(dataObj) # parse json
+    # dataObj = json.dumps(dataObj) # convert to json
+    # print(dataObj)
+
+    #variables
+    domain = dataObj["domain"]
+
+    #log
+    print("specific-domain: " + domain)
+
+    #fetch account data
+    dbRequestAccountData = dbUsers._fetch({"domain": domain})
+    accountObj = dbRequestAccountData[1]["items"][0]
+    accountSections = accountObj["sections"]
+    accountCategories = accountObj["categories"]
+    accountData = accountObj["data"]
+    accountSetttings = accountObj["settings"]
+
+    return { 
+             "status": "fetch specific user successful",
+             "sections": accountSections, 
+             "categories": accountCategories, 
+             "data": accountData,
+             "settings": accountSetttings,
+           }
 
 
 @app.post("/update-user-data", tags=['users'])
@@ -344,5 +445,255 @@ async def updateUserSections(request: Request):
         
     except: 
         return { "status": "update user sections failed" }
-   
+
+
+@app.post("/update-user-settings", tags=['users'])
+async def updateUserSections(request: Request):
+    #parse request data
+    dataObj = await request.body()
+    dataObj = dataObj.decode()
+    dataObj = json.loads(dataObj) # parse json  
+    # dataObj = json.dumps(dataObj) # convert to json
     
+    #variables
+    newCredentials = dataObj['credentials']
+    newSettings = dataObj['settings']
+    userInfo = dataObj['userInfo']
+    newUsername = newCredentials['usernameNew']
+    newDomain = newCredentials['domain']
+    newEmail = newCredentials['email']
+    newName = newCredentials['name']
+    newPhone = newCredentials['phone']
+    newCountry = newCredentials['country']
+    newPassword = newCredentials['passwordNew']
+    oldPassword = newCredentials['passwordOld']
+    username = userInfo["username"]
+    token = userInfo["token"]
+    lastLogin = userInfo["lastLogin"]
+    newSettingsPassedCheck = False
+    newPasswordPassedCheck = False
+    newEmailPassedCheck = False
+    newNamePassedCheck = False
+    newPhonePassedCheck = False
+    newCountryPassedCheck = False
+    usernameIsAvailable = False
+    domainIsAvailable = False
+
+    print(newCredentials)
+    # print(newSettings)
+    # print(userInfo)
+
+    #log
+    print("update-user-settings: " + username)
+
+    #fetch account data
+    dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
+    accountObj = dbRequestAccountData[1]["items"][0]
+    accountKey = accountObj["key"]
+    # print(accountObj)
+    # print("username:" + accountObj['username'])
+    # print("password:" + accountObj['password'])
+    # print("newPassword: " + newPassword)
+    # print("oldPassword: " + oldPassword)
+
+    #check new settings
+    if(newSettings != ''): 
+        newSettingsPassedCheck = True
+        
+    #check new email
+    if(newEmail != '' and newEmail != accountObj['email']):
+        newEmailPassedCheck = True
+
+    #check new name
+    if(newName != '' and newName != accountObj['name']): 
+        newNamePassedCheck = True
+
+    #check new phone
+    if(newPhone != '' and newPhone != accountObj['phone']): 
+        newPhonePassedCheck = True
+
+    #check new country
+    if(newCountry != '' and newCountry != accountObj['country']): 
+        newCountryPassedCheck = True
+
+    #check new password
+    if(newPassword != '' and oldPassword != ''):
+        if(oldPassword != accountObj['password']): return { "status": "update user settings failed: old password is incorrect" }
+        else: newPasswordPassedCheck = True
+    
+    #check new username
+    if(newUsername != '' and newUsername != accountObj['username']): 
+        if(forbiddenNameCheck(newUsername) == False): return { "status": "update user settings failed: username is unavailable" }
+        elif(forbiddenCharacterCheck(newUsername) == False): return { "status": "update user settings failed: username is unavailable" }
+        else: 
+            dbRequestCheckUsernameIsAvailable = dbUsers._fetch({"username": newUsername})
+            if(dbRequestCheckUsernameIsAvailable[1]['paging']['size'] == 0): usernameIsAvailable = True
+            else: return { "status": "update user settings failed: username is unavailable" }
+    
+    #check new domain
+    if(newDomain != '' and newDomain != accountObj['domain']):
+        if(forbiddenNameCheck(newDomain) == False): return { "status": "update user settings failed: domain is unavailable" }
+        elif(forbiddenCharacterCheck(newDomain) == False): return { "status": "update user settings failed: domain is unavailable" }
+        else:
+            dbRequestCheckDomainIsAvailable = dbUsers._fetch({"domain": newDomain})
+            if(dbRequestCheckDomainIsAvailable[1]['paging']['size'] == 0): domainIsAvailable = True
+            else: return { "status": "update user settings failed: domain is unavailable" }
+
+    #update account
+    try: 
+        #update account settings
+        if(newSettingsPassedCheck == True): dbUsers.update({"settings": newSettings}, accountKey)
+
+        #update account credentials
+        if(usernameIsAvailable == True): dbUsers.update({"username": newUsername}, accountKey)
+        if(domainIsAvailable == True): dbUsers.update({"domain": newDomain}, accountKey) 
+        if(newEmailPassedCheck == True): dbUsers.update({"email": newEmail}, accountKey) 
+        if(newNamePassedCheck == True): dbUsers.update({"name": newName}, accountKey)
+        if(newPhonePassedCheck == True): dbUsers.update({"phone": newPhone}, accountKey)
+        if(newCountryPassedCheck == True): dbUsers.update({"country": newCountry}, accountKey)
+        if(newPasswordPassedCheck == True): dbUsers.update({"password": newPassword}, accountKey) 
+
+        return { "status": "update user settings successful" }
+        
+    except: 
+        return { "status": "update user settings failed" }
+
+
+@app.post("/reset-user", tags=['users'])
+async def updateUserSections(request: Request):
+    #parse request data
+    dataObj = await request.body()
+    dataObj = dataObj.decode()
+    dataObj = json.loads(dataObj) # parse json  
+    # dataObj = json.dumps(dataObj) # convert to json
+    
+    #variables
+    password = dataObj['password']
+    userInfo = dataObj['userInfo']
+    username = userInfo["username"]
+    token = userInfo["token"]
+    lastLogin = userInfo["lastLogin"]
+    defaultSettings = {
+        "buttonAbout": "false",
+		"buttonAboutText": "",
+		"buttonContact": "false",
+		"buttonFullscreen": "false",
+		"buttonSearch": "false",
+		"colorLoadingScreen": "#000000",
+		"colorNavBackground": "#000000",
+		"colorNavIcons": "#000000",
+		"colorSectionsBackground": "#000000",
+		"colorText": "#000000",
+		"loadingScreen": "false",
+		"loadingScreenUrl": "",
+		"modeSlideshow": "false",
+		"navIconSize": "medium",
+		"navIconType": "numbers",
+		"navPosition": "left",
+		"pageEnd": "false",
+		"pageEndText": "",
+		"pageEndTitle": "",
+		"pageIndex": "false",
+		"pageStart": "false",
+		"pageStartText": "",
+		"pageStartTitle": "",
+		"sectionBackgroundImage": "false",
+		"sectionBackgroundImageUrl": "",
+		"siteAccess": "public",
+		"sitePasswordProtected": "false",
+		"sitePasswordProtectedPassword": "",
+		"textSize": "medium",
+		"textStyle": "normal"
+    }
+    # print(newSettings)
+    # print(userInfo)
+
+    #log
+    print("reset-user: " + username)
+
+    #fetch account data
+    dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
+    accountObj = dbRequestAccountData[1]["items"][0]
+    accountKey = accountObj["key"]
+    # print(accountObj)
+
+    #reset account
+    try: 
+        if(password == accountObj["password"]):
+            dbUsers.update({
+                            "domain": "", 
+                            "email": "", 
+                            "name": "", 
+                            "phone": "", 
+                            "country": "", 
+                            "settings": defaultSettings, 
+                            "sections": [], 
+                            "categories": [], 
+                            "data": []}, 
+                    accountKey)
+
+            return { "status": "update user reset successful" }
+        
+        else: 
+            return { "status": "update user reset failed: password is incorrect" }
+        
+    except: 
+        return { "status": "update user reset failed" }
+
+
+@app.post("/delete-user", tags=['users'])
+async def updateUserSections(request: Request):
+    #parse request data
+    dataObj = await request.body()
+    dataObj = dataObj.decode()
+    dataObj = json.loads(dataObj) # parse json  
+    # dataObj = json.dumps(dataObj) # convert to json
+    
+    #variables
+    password = dataObj['password']
+    userInfo = dataObj['userInfo']
+    username = userInfo["username"]
+    token = userInfo["token"]
+    lastLogin = userInfo["lastLogin"]
+    print(userInfo)
+    
+    #log
+    print("delete-user: " + username)
+
+    #fetch account data
+    dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
+    accountObj = dbRequestAccountData[1]["items"][0]
+    accountKey = accountObj["key"]
+    # print(accountObj)
+
+    #delete account
+    try: 
+        if(password == accountObj["password"]):
+            dbUsers.delete(accountKey)
+            return { "status": "delete user successful" }
+        
+        else: 
+            return { "status": "delete user failed: password is incorrect" }
+        
+    except: 
+        return { "status": "update user reset failed" }
+   
+
+def forbiddenNameCheck(value):
+    forbiddenNames = ["temp", "null", "domain", "empty", "blank", "undefined", "none", " "]
+
+    for item in forbiddenNames: 
+        if(value == item): return False
+
+    for item in forbiddenNames: 
+        if(item in value): return False
+
+
+def forbiddenCharacterCheck(value):
+    forbiddenCharacters = [" ", "!", "@", "$", "%", ",", ".", "<", ">", "'", "\"", "_", "-", "?", "|", "-", "^", "`", "/", "\\"]
+
+    for item in forbiddenCharacters: 
+        if (value == item): return False
+
+    for item in forbiddenCharacters: 
+        if (item in value): return False
