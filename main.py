@@ -1,4 +1,4 @@
-#------ imports ------#
+#------ IMPORTS ------#
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
@@ -12,14 +12,14 @@ import requests
 
 
 
-#------ initializations ------#
+#------ START ------#
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]) # CORS settings
 dbRoot = Deta("") # project data key
 
 
 
-#------ variables ------#
+#------ VARIABLES ------#
 dbSections = dbRoot.Base("sections") # creates db if does not exists
 dbCategories = dbRoot.Base("categories")
 dbData = dbRoot.Base("data")
@@ -27,17 +27,60 @@ dbUsers = dbRoot.Base("users")
 # origins = ["http://localhost","http://localhost:8080"]
 
 
+#------ QUICK NAV ------#
+def _():
+    #routes error (1)
+    root
 
-#------ root ------#
+    #routes sections (4)
+    section_all
+    section_add
+    section_edit
+    section_delete
+
+    #routes categories (4)
+    category_all
+    category_add
+    category_edit
+    category_delete
+
+    #routes data (4)
+    data_all
+    data_add
+    data_edit
+    data_delete
+
+    #routes users (12)
+    user_all
+    user_add
+    user_sign_in
+    user_sign_out
+    user_specific
+    user_update_data
+    user_update_categories
+    user_update_sections
+    user_update_settings
+    user_reset
+    user_delete
+
+    #routes domain (1)
+    domain_specific
+
+    #standalone functions (2)
+    forbiddenCharacterCheck
+    forbiddenNameCheck
+
+
+
+#------ ROUTES ------#
 @app.get("/", tags=['root']) #response_class=JSONResponse #ORJSONResponse([{"root": "there is nothing here"}])
-async def root(): 
-    return {"data": "there is nothing here"}
+async def root(): return {"data": "there is nothing here"}
 
 
 
-#------ sections ------#
-@app.get("/sections", tags=['sections'])
-async def sections():
+# 1. section all
+@app.get("/section-all", tags=['sections'])
+async def section_all():
     sectionsFromDb = dbSections.fetch() #next(dbSections.fetch())
     #carsParsed = []
     #for car in carsFromDb:
@@ -46,56 +89,99 @@ async def sections():
     return {"sections": sectionsFromDb}
 
 
-@app.post("/add-section", tags=['sections'])
-async def addSection(request: Request):
+
+# 2. section add
+@app.post("/section-add", tags=['sections'])
+async def section_add(request: Request):
+    #variables
     sectionObj = await request.json()
-    dbSections.insert(sectionObj) #insert
-    return {"data": "section added successfully"} #response
-
-
-@app.post("/edit-section/{key}", tags=['sections'])
-async def editSection(key, request: Request):
-    sectionObj = await request.json() #request.body()
-    dbSections.update(sectionObj, key) #update
-    return {"data": "section: " + str(sectionObj['title']) + " edited successfully"} #response
-
-
-@app.post("/delete-section/{key}", tags=['sections'])
-async def deleteSection(key, request: Request):
-    dbSections.delete(key) #delete
-    return {"data": "section deleted successfully"} #response
+    
+    #update DB
+    dbSections.insert(sectionObj)
+    
+    #response
+    return {"data": "section added successfully"} 
 
 
 
-#------ categories ------#
-@app.get("/categories", tags=['categories'])
-async def categories(): categoriesFromDb = dbCategories.fetch(); return {"categories": categoriesFromDb}
+# 3. section edit
+@app.post("/section-edit/{key}", tags=['sections'])
+async def section_edit(key, request: Request):
+    #variables
+    sectionObj = await request.json()
+    
+    #update DB
+    dbSections.update(sectionObj, key)
+    
+    #reponse
+    return {"data": "section: " + str(sectionObj['title']) + " edited successfully"}
 
 
-@app.post("/add-category", tags=['categories'])
-async def addCategory(request: Request): 
+
+# 4. section delete
+@app.post("/section-delete/{key}", tags=['sections'])
+async def section_delete(key, request: Request):
+    #update DB
+    dbSections.delete(key)
+    
+    #response
+    return {"data": "section deleted successfully"}
+
+
+
+# 5. category all
+@app.get("/category-all", tags=['categories'])
+async def category_all(): 
+    #fetch data
+    categoriesFromDb = dbCategories.fetch()
+    
+    #response
+    return {"categories": categoriesFromDb}
+
+
+
+# 6. category add
+@app.post("/category-add", tags=['categories'])
+async def category_add(request: Request): 
+    #variables
     categoryObj = await request.json()
+
+    #update DB
     dbCategories.insert(categoryObj)
+
+    #repsonse
     return {"data": "category added successfully"}
 
 
-@app.post("/edit-category/{key}", tags=['categories'])
-async def editCategory(key, request: Request):
+
+# 7. category edit
+@app.post("/category-edit/{key}", tags=['categories'])
+async def category_edit(key, request: Request):
+    #variables
     categoryObj = await request.json() #request.body()
+
+    #update DB
     dbCategories.update(categoryObj, key) #update
+
+    #response
     return {"data": "category: " + str(categoryObj['title']) + " edited successfully"} #response
 
 
-@app.post("/delete-category/{key}", tags=['categories'])
-async def deleteSection(key, request: Request):
-    dbCategories.delete(key) #delete
-    return {"data": "category deleted successfully"} #response
+
+# 8. category delete
+@app.post("/category-delete/{key}", tags=['categories'])
+async def category_delete(key, request: Request):
+    #update DB
+    dbCategories.delete(key)
+
+    #response
+    return {"data": "category deleted successfully"} 
 
 
 
-#------ data ------#
+# 9. data all
 @app.get("/data", tags=['data'])
-async def data(section=None, category=None):
+async def data_all(section=None, category=None):
     if category != None and section != None:
         dataFromDb = dbData.fetch({"section": section, "category": category})
         return {"data": dataFromDb}
@@ -107,36 +193,44 @@ async def data(section=None, category=None):
         return {"data": dataFromDb}
 
 
+
+# 10. data add
 @app.post("/add-data", tags=['data'])
-async def addData(request: Request):
+async def data_add(request: Request):
     dataObj = await request.json()
     dbData.insert(dataObj) #insert
     return {"data": "data added successfully"}
 
 
+
+# 11. data edit
 @app.post("/edit-data/{key}", tags=['data'])
-async def editData(key, request: Request):
+async def data_edit(key, request: Request):
     dataObj = await request.json() #request.body()
     dbData.update(dataObj, key) #update
     return {"data": "data: " + str(dataObj['category']) + " edited successfully"} #response
 
 
+
+# 12. data delete
 @app.post("/delete-data/{key}", tags=['data']) #data delete
-async def deleteData(key, request: Request):
+async def data_delete(key, request: Request):
     dbData.delete(key) #delete
     return {"data": "data deleted successfully"} #response
 
 
 
-#------ users ------#
+# 13. user all
 @app.get("/users", tags=['users']) 
-async def users(): 
+async def user_all(): 
     usersFromDb = dbUsers.fetch()
     return {"users": usersFromDb}
 
 
+
+# 14. add user
 @app.post("/add-user", tags=['users'])
-async def addUser(request: Request):
+async def user_add(request: Request):
     dataObj = await request.body()
     dataObj = dataObj.decode()
     dataObj = json.loads(dataObj) # parse json
@@ -211,10 +305,12 @@ async def addUser(request: Request):
 
     #update db
     dbUsers.insert(dataObj); return {"status": "user added successfully"} #response
-    
 
+
+
+# 15. sign in user
 @app.post("/sign-in-user", tags=['users'])
-async def signInUser(request: Request):
+async def user_sign_in(request: Request):
     #debugging
     # print("sign-in-user")
 
@@ -251,15 +347,19 @@ async def signInUser(request: Request):
                   "token": correctUserObj["token"]
                 }
 
-     
-# @app.post("/sign-out-user", tags=['users'])
-# async def signOutUser(request: Request):
-    # print("sign-out-user")
+
+
+# 16. sign out user 
+@app.post("/sign-out-user", tags=['users'])
+async def user_sign_out(request: Request):
+    print("sign-out-user")
     # return {"status": "logout test"}
 
 
+
+# 17. get specific user
 @app.post("/specific-user", tags=['users'])
-async def specificUser(request: Request):
+async def user_specific(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
@@ -299,23 +399,27 @@ async def specificUser(request: Request):
         "country": accountCountry,
         "phone": accountPhone
     }
+    accountInfo = {
+        "lastLogin": accountLastLogin,
+        "createdAt": accountCreatedAt,
+        "accountStatus": accountStatus
+    }
 
     return { 
              "status": "fetch specific user successful",
-             "username": accountUsername, 
-             "createdAt": accountCreatedAt, 
-             "lastLogin": accountLastLogin, 
              "sections": accountSections, 
              "categories": accountCategories, 
              "data": accountData,
              "settings": accountSetttings,
              "credentials": accountCredentials,
-             "accountStatus": accountStatus
+             "info": accountInfo
            }
 
 
+
+# 18. get specific domain
 @app.post("/specific-domain", tags=['users'])
-async def specificUser(request: Request):
+async def domain_specific(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
@@ -346,8 +450,10 @@ async def specificUser(request: Request):
            }
 
 
+
+# 19. update user data
 @app.post("/update-user-data", tags=['users'])
-async def updateUserData(request: Request):
+async def user_update_data(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
@@ -376,8 +482,10 @@ async def updateUserData(request: Request):
     except: return { "status": "update user data failed" }
 
 
+
+# 20. update user categories
 @app.post("/update-user-categories", tags=['users'])
-async def updateUserCategories(request: Request):
+async def user_update_categories(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
@@ -413,8 +521,10 @@ async def updateUserCategories(request: Request):
         return { "status": "update user categories failed" }
 
 
+
+# 21. update user sections
 @app.post("/update-user-sections", tags=['users'])
-async def updateUserSections(request: Request):
+async def user_update_sections(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
@@ -447,8 +557,10 @@ async def updateUserSections(request: Request):
         return { "status": "update user sections failed" }
 
 
+
+# 22. update user settings
 @app.post("/update-user-settings", tags=['users'])
-async def updateUserSections(request: Request):
+async def user_update_settings(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
@@ -559,8 +671,10 @@ async def updateUserSections(request: Request):
         return { "status": "update user settings failed" }
 
 
+
+# 23. reset user
 @app.post("/reset-user", tags=['users'])
-async def updateUserSections(request: Request):
+async def user_reset(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
@@ -621,28 +735,28 @@ async def updateUserSections(request: Request):
     try: 
         if(password == accountObj["password"]):
             dbUsers.update({
-                            "domain": "", 
-                            "email": "", 
-                            "name": "", 
-                            "phone": "", 
-                            "country": "", 
-                            "settings": defaultSettings, 
-                            "sections": [], 
-                            "categories": [], 
-                            "data": []}, 
-                    accountKey)
-
+                "domain": "",
+                "email": "",
+                "name": "",
+                "phone": "",
+                "country": "",
+                "settings": defaultSettings,
+                "sections": [],
+                "categories": [],
+                "data": []},
+            accountKey)
             return { "status": "update user reset successful" }
-        
-        else: 
-            return { "status": "update user reset failed: password is incorrect" }
+
+        else: return { "status": "update user reset failed: password is incorrect" }
         
     except: 
         return { "status": "update user reset failed" }
 
 
+
+# 24. delete user
 @app.post("/delete-user", tags=['users'])
-async def updateUserSections(request: Request):
+async def user_delete(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
@@ -677,8 +791,11 @@ async def updateUserSections(request: Request):
         
     except: 
         return { "status": "update user reset failed" }
-   
 
+
+
+
+#------ functions -------#
 def forbiddenNameCheck(value):
     forbiddenNames = ["temp", "null", "domain", "empty", "blank", "undefined", "none", " "]
 
@@ -687,6 +804,7 @@ def forbiddenNameCheck(value):
 
     for item in forbiddenNames: 
         if(item in value): return False
+
 
 
 def forbiddenCharacterCheck(value):
