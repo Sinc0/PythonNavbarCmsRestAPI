@@ -7,7 +7,7 @@ from fastapi.responses import ORJSONResponse
 import json
 import datetime
 import uuid
-import requests
+# import requests
 #from fastapi.responses import JSONResponse
 
 
@@ -19,11 +19,45 @@ dbRoot = Deta("") # project data key
 
 
 
-#------ VARIABLES ------#
-dbSections = dbRoot.Base("sections") # creates db if does not exists
-dbCategories = dbRoot.Base("categories")
-dbData = dbRoot.Base("data")
+#------ DB ------#
 dbUsers = dbRoot.Base("users")
+
+
+
+#------ VARIABLES ------#
+defaultSettings = {
+    "buttonAbout": "false",
+    "buttonAboutText": "",
+    "buttonContact": "false",
+    "buttonFullscreen": "false",
+    "buttonSearch": "false",
+    "colorLoadingScreen": "#000000",
+    "colorNavBackground": "#000000",
+    "colorNavIcons": "#000000",
+    "colorNavIconsText": "#000000",
+    "colorSectionBackground": "#000000",
+    "colorText": "#000000",
+    "loadingScreen": "false",
+    "loadingScreenUrl": "",
+    "modeSlideshow": "false",
+    "navIconSize": "medium",
+    "navIconType": "numbers",
+    "navPosition": "left",
+    "pageEnd": "false",
+    "pageEndText": "",
+    "pageEndTitle": "",
+    "pageIndex": "false",
+    "pageStart": "false",
+    "pageStartText": "",
+    "pageStartTitle": "",
+    "sectionBackgroundImage": "false",
+    "sectionBackgroundImageUrl": "",
+    "siteAccess": "public",
+    "sitePasswordProtected": "false",
+    "sitePasswordProtectedPassword": "",
+    "textSize": "medium",
+    "textStyle": "normal"
+}
 # origins = ["http://localhost","http://localhost:8080"]
 
 
@@ -32,29 +66,11 @@ def _():
     #routes error (1)
     root
 
-    #routes sections (4)
-    section_all
-    section_add
-    section_edit
-    section_delete
-
-    #routes categories (4)
-    category_all
-    category_add
-    category_edit
-    category_delete
-
-    #routes data (4)
-    data_all
-    data_add
-    data_edit
-    data_delete
-
     #routes users (12)
     user_all
     user_add
     user_sign_in
-    user_sign_out
+    # user_sign_out
     user_specific
     user_update_data
     user_update_categories
@@ -74,167 +90,31 @@ def _():
 
 #------ ROUTES ------#
 @app.get("/", tags=['root']) #response_class=JSONResponse #ORJSONResponse([{"root": "there is nothing here"}])
-async def root(): return {"data": "there is nothing here"}
+async def root(): return { "data": "there is nothing here" }
 
 
 
-# 1. section all
-@app.get("/section-all", tags=['sections'])
-async def section_all():
-    sectionsFromDb = dbSections.fetch() #next(dbSections.fetch())
-    #carsParsed = []
-    #for car in carsFromDb:
-        #c = {"id": car["id"], "lastEdited": car["lastEdited"], "model": "S", "title": car["title"], "versions": car["versions"]}
-        #carsParsed.append(c)
-    return {"sections": sectionsFromDb}
-
-
-
-# 2. section add
-@app.post("/section-add", tags=['sections'])
-async def section_add(request: Request):
-    #variables
-    sectionObj = await request.json()
-    
-    #update DB
-    dbSections.insert(sectionObj)
-    
-    #response
-    return {"data": "section added successfully"} 
-
-
-
-# 3. section edit
-@app.post("/section-edit/{key}", tags=['sections'])
-async def section_edit(key, request: Request):
-    #variables
-    sectionObj = await request.json()
-    
-    #update DB
-    dbSections.update(sectionObj, key)
-    
-    #reponse
-    return {"data": "section: " + str(sectionObj['title']) + " edited successfully"}
-
-
-
-# 4. section delete
-@app.post("/section-delete/{key}", tags=['sections'])
-async def section_delete(key, request: Request):
-    #update DB
-    dbSections.delete(key)
-    
-    #response
-    return {"data": "section deleted successfully"}
-
-
-
-# 5. category all
-@app.get("/category-all", tags=['categories'])
-async def category_all(): 
-    #fetch data
-    categoriesFromDb = dbCategories.fetch()
-    
-    #response
-    return {"categories": categoriesFromDb}
-
-
-
-# 6. category add
-@app.post("/category-add", tags=['categories'])
-async def category_add(request: Request): 
-    #variables
-    categoryObj = await request.json()
-
-    #update DB
-    dbCategories.insert(categoryObj)
-
-    #repsonse
-    return {"data": "category added successfully"}
-
-
-
-# 7. category edit
-@app.post("/category-edit/{key}", tags=['categories'])
-async def category_edit(key, request: Request):
-    #variables
-    categoryObj = await request.json() #request.body()
-
-    #update DB
-    dbCategories.update(categoryObj, key) #update
-
-    #response
-    return {"data": "category: " + str(categoryObj['title']) + " edited successfully"} #response
-
-
-
-# 8. category delete
-@app.post("/category-delete/{key}", tags=['categories'])
-async def category_delete(key, request: Request):
-    #update DB
-    dbCategories.delete(key)
-
-    #response
-    return {"data": "category deleted successfully"} 
-
-
-
-# 9. data all
-@app.get("/data", tags=['data'])
-async def data_all(section=None, category=None):
-    if category != None and section != None:
-        dataFromDb = dbData.fetch({"section": section, "category": category})
-        return {"data": dataFromDb}
-    elif section != None:
-        dataFromDb = dbData.fetch({"section": section})
-        return {"data": dataFromDb}
-    else:
-        dataFromDb = dbData.fetch()
-        return {"data": dataFromDb}
-
-
-
-# 10. data add
-@app.post("/add-data", tags=['data'])
-async def data_add(request: Request):
-    dataObj = await request.json()
-    dbData.insert(dataObj) #insert
-    return {"data": "data added successfully"}
-
-
-
-# 11. data edit
-@app.post("/edit-data/{key}", tags=['data'])
-async def data_edit(key, request: Request):
-    dataObj = await request.json() #request.body()
-    dbData.update(dataObj, key) #update
-    return {"data": "data: " + str(dataObj['category']) + " edited successfully"} #response
-
-
-
-# 12. data delete
-@app.post("/delete-data/{key}", tags=['data']) #data delete
-async def data_delete(key, request: Request):
-    dbData.delete(key) #delete
-    return {"data": "data deleted successfully"} #response
-
-
-
-# 13. user all
-@app.get("/users", tags=['users']) 
-async def user_all(): 
+#1: user all
+@app.get("/user-all", tags=['users']) 
+async def user_all():
+    #fetch all users
     usersFromDb = dbUsers.fetch()
-    return {"users": usersFromDb}
+    
+    #return value
+    return { "users": usersFromDb }
 
 
 
-# 14. add user
-@app.post("/add-user", tags=['users'])
+#2: add user
+@app.post("/user-add", tags=['users'])
 async def user_add(request: Request):
+    #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
     dataObj = json.loads(dataObj) # parse json
     # json.dumps(dataObj) # convert to json
+
+    #debugging
     # print(dataObj)
 
     #set user obj
@@ -243,38 +123,7 @@ async def user_add(request: Request):
     dataObj["sections"] = []
     dataObj["categories"] = []
     dataObj["data"] = []
-    dataObj["settings"] = {
-        "buttonAbout": "false",
-        "buttonAboutText": "",
-        "buttonContact": "false",
-        "buttonFullscreen": "false",
-        "buttonSearch": "false",
-        "colorLoadingScreen": "#000000",
-        "colorNavBackground": "#000000",
-        "colorNavIcons": "#000000",
-        "colorSectionsBackground": "#000000",
-        "colorText": "#000000",
-        "loadingScreen": "false",
-        "loadingScreenUrl": "",
-        "modeSlideshow": "false",
-        "navIconSize": "medium",
-        "navIconType": "numbers",
-        "navPosition": "left",
-        "pageEnd": "false",
-        "pageEndText": "",
-        "pageEndTitle": "",
-        "pageIndex": "false",
-        "pageStart": "false",
-        "pageStartText": "",
-        "pageStartTitle": "",
-        "sectionBackgroundImage": "false",
-        "sectionBackgroundImageUrl": "",
-        "siteAccess": "public",
-        "sitePasswordProtected": "false",
-        "sitePasswordProtectedPassword": "",
-        "textSize": "medium",
-        "textStyle": "normal"
-    }
+    dataObj["settings"] = defaultSettings
     dataObj["token"] = ""
     dataObj["domain"] = ""
     dataObj["email"] = ""
@@ -304,29 +153,30 @@ async def user_add(request: Request):
         if(dataObj["username"] == user["username"]): return { "status": "username is taken"}
 
     #update db
-    dbUsers.insert(dataObj); return {"status": "user added successfully"} #response
+    dbUsers.insert(dataObj); return { "status": "user added successfully" }
 
 
 
-# 15. sign in user
-@app.post("/sign-in-user", tags=['users'])
+#3: sign in user
+@app.post("/user-sign-in", tags=['users'])
 async def user_sign_in(request: Request):
-    #debugging
-    # print("sign-in-user")
-
+    #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
-    dataObj = json.loads(dataObj) # parse json
-    # json.dumps(dataObj) # convert to json
-    # print(dataObj)
+    dataObj = json.loads(dataObj)
     
     username = dataObj["username"]
     password = dataObj["password"]
     correctUserObj = ""
 
+    #log
+    print("sign-in-user: " + username)
+
+    #fetch all users
     dbUsersObj = dbUsers._fetch()
     allUsers = dbUsersObj[1]["items"]
 
+    #check if username and password match
     for item in allUsers:
         if(username == item["username"] and password == item["password"]): 
             print(item)
@@ -334,37 +184,39 @@ async def user_sign_in(request: Request):
             correctUserObj["token"] = str(uuid.uuid4()).replace("-", "")
             correctUserObj["lastLogin"] = str(datetime.datetime.now())
             break
+    
+    #update DB
+    if(correctUserObj != ""): 
+        dbUsers.put(correctUserObj)
+        return { "status": "user login successful", 
+                 "account": correctUserObj["username"], 
+                 "lastLogin": correctUserObj["lastLogin"],
+                 "token": correctUserObj["token"] }
 
-    if(correctUserObj == ""): 
+    #login error
+    elif(correctUserObj == ""): 
         return {"status": "user login failed"}
         
-    elif(correctUserObj != ""): 
-        dbUsers.put(correctUserObj)
-        return {
-                  "status": "user login successful", 
-                  "account": correctUserObj["username"], 
-                  "lastLogin": correctUserObj["lastLogin"],
-                  "token": correctUserObj["token"]
-                }
 
 
 
-# 16. sign out user 
-@app.post("/sign-out-user", tags=['users'])
-async def user_sign_out(request: Request):
-    print("sign-out-user")
+#4: sign out user 
+# @app.post("/user-sign-out", tags=['users'])
+# async def user_sign_out(request: Request):
+    # print("sign-out-user")
     # return {"status": "logout test"}
 
 
 
-# 17. get specific user
-@app.post("/specific-user", tags=['users'])
+#5: get specific user
+@app.post("/user-specific", tags=['users'])
 async def user_specific(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
-    dataObj = json.loads(dataObj) # parse json
-    # dataObj = json.dumps(dataObj) # convert to json
+    dataObj = json.loads(dataObj)
+
+    #debugging
     # print(dataObj)
 
     #variables
@@ -373,9 +225,9 @@ async def user_specific(request: Request):
     lastLogin = dataObj["lastLogin"]
 
     #log
-    print("specific-user: " + username)
+    print("user-specific: " + username)
 
-    #fetch account data
+    #fetch user data
     dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
     accountObj = dbRequestAccountData[1]["items"][0]
     accountUsername = accountObj["username"]
@@ -391,74 +243,27 @@ async def user_specific(request: Request):
     accountCountry = accountObj["country"]
     accountPhone = accountObj["phone"]
     accountStatus = accountObj["accountStatus"]
-    accountCredentials = {
-        "username": accountUsername,
-        "domain": accountDomain,
-        "email": accountEmail,
-        "name": accountName,
-        "country": accountCountry,
-        "phone": accountPhone
-    }
-    accountInfo = {
-        "lastLogin": accountLastLogin,
-        "createdAt": accountCreatedAt,
-        "accountStatus": accountStatus
-    }
+    accountInfo = { "lastLogin": accountLastLogin, "createdAt": accountCreatedAt, "accountStatus": accountStatus }
+    accountCredentials = { "username": accountUsername,"domain": accountDomain,"email": accountEmail,"name": accountName,"country": accountCountry,"phone": accountPhone }
 
-    return { 
-             "status": "fetch specific user successful",
+    #return value
+    return { "status": "fetch specific user successful",
              "sections": accountSections, 
              "categories": accountCategories, 
              "data": accountData,
              "settings": accountSetttings,
              "credentials": accountCredentials,
-             "info": accountInfo
-           }
+             "info": accountInfo }
 
 
 
-# 18. get specific domain
-@app.post("/specific-domain", tags=['users'])
-async def domain_specific(request: Request):
-    #parse request data
-    dataObj = await request.body()
-    dataObj = dataObj.decode()
-    dataObj = json.loads(dataObj) # parse json
-    # dataObj = json.dumps(dataObj) # convert to json
-    # print(dataObj)
-
-    #variables
-    domain = dataObj["domain"]
-
-    #log
-    print("specific-domain: " + domain)
-
-    #fetch account data
-    dbRequestAccountData = dbUsers._fetch({"domain": domain})
-    accountObj = dbRequestAccountData[1]["items"][0]
-    accountSections = accountObj["sections"]
-    accountCategories = accountObj["categories"]
-    accountData = accountObj["data"]
-    accountSetttings = accountObj["settings"]
-
-    return { 
-             "status": "fetch specific user successful",
-             "sections": accountSections, 
-             "categories": accountCategories, 
-             "data": accountData,
-             "settings": accountSetttings,
-           }
-
-
-
-# 19. update user data
-@app.post("/update-user-data", tags=['users'])
+#6: update user data
+@app.post("/user-update-data", tags=['users'])
 async def user_update_data(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
-    dataObj = json.loads(dataObj) # parse json  
-    # dataObj = json.dumps(dataObj) # convert to json
+    dataObj = json.loads(dataObj)
 
     #variables
     userInfo = dataObj[0]
@@ -466,31 +271,34 @@ async def user_update_data(request: Request):
     username = userInfo["username"]
     token = userInfo["token"]
     lastLogin = userInfo["lastLogin"]
+
+    #debugging
     # print(userInfo)
     # print(newData)
 
     #log
-    print("update-user-data: " + username)
+    print("user-update-data: " + username)
 
-    #fetch account data
+    #fetch user data
     dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
     accountObj = dbRequestAccountData[1]["items"][0]
     accountKey = accountObj["key"]
     
-    #update account data
+    #update user data
     try: dbUsers.update({"data": newData}, accountKey); return { "status": "update user data successful" }
+
+    #update error
     except: return { "status": "update user data failed" }
 
 
 
-# 20. update user categories
-@app.post("/update-user-categories", tags=['users'])
+#7: update user categories
+@app.post("/user-update-categories", tags=['users'])
 async def user_update_categories(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
-    dataObj = json.loads(dataObj) # parse json  
-    # dataObj = json.dumps(dataObj) # convert to json
+    dataObj = json.loads(dataObj)
     
     #variables
     userInfo = dataObj[0]
@@ -499,37 +307,39 @@ async def user_update_categories(request: Request):
     username = userInfo["username"]
     token = userInfo["token"]
     lastLogin = userInfo["lastLogin"]
+
+    #debugging
     # print(userInfo)
     # print(newCategories)
     # print(newData)
 
     #log
-    print("update-user-categories: " + username)
+    print("user-update-categories: " + username)
 
-    #fetch account data
+    #fetch user data
     dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
     accountObj = dbRequestAccountData[1]["items"][0]
     accountKey = accountObj["key"]
     
-    #update account categories & data
+    #update user categories & data
     try: 
         dbUsers.update({"categories": newCategories}, accountKey); 
         dbUsers.update({"data": newData}, accountKey); 
         return { "status": "update user categories successful" }
-        
+    
+    #update error
     except: 
         return { "status": "update user categories failed" }
 
 
 
-# 21. update user sections
-@app.post("/update-user-sections", tags=['users'])
+#8: update user sections
+@app.post("/user-update-sections", tags=['users'])
 async def user_update_sections(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
-    dataObj = json.loads(dataObj) # parse json  
-    # dataObj = json.dumps(dataObj) # convert to json
+    dataObj = json.loads(dataObj) 
     
     #variables
     userInfo = dataObj[0]
@@ -541,31 +351,31 @@ async def user_update_sections(request: Request):
     # print(newSections)
 
     #log
-    print("update-user-sections: " + username)
+    print("user-update-sections: " + username)
 
-    #fetch account data
+    #fetch user data
     dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
     accountObj = dbRequestAccountData[1]["items"][0]
     accountKey = accountObj["key"]
     
-    #update account sections & data
+    #update user sections & data
     try: 
         dbUsers.update({"sections": newSections}, accountKey); 
         return { "status": "update user sections successful" }
-        
+    
+    #update error
     except: 
         return { "status": "update user sections failed" }
 
 
 
-# 22. update user settings
-@app.post("/update-user-settings", tags=['users'])
+#9: update user settings
+@app.post("/user-update-settings", tags=['users'])
 async def user_update_settings(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
-    dataObj = json.loads(dataObj) # parse json  
-    # dataObj = json.dumps(dataObj) # convert to json
+    dataObj = json.loads(dataObj) 
     
     #variables
     newCredentials = dataObj['credentials']
@@ -596,9 +406,9 @@ async def user_update_settings(request: Request):
     # print(userInfo)
 
     #log
-    print("update-user-settings: " + username)
+    print("user-update-settings: " + username)
 
-    #fetch account data
+    #fetch user data
     dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
     accountObj = dbRequestAccountData[1]["items"][0]
     accountKey = accountObj["key"]
@@ -607,26 +417,15 @@ async def user_update_settings(request: Request):
     # print("password:" + accountObj['password'])
     # print("newPassword: " + newPassword)
     # print("oldPassword: " + oldPassword)
-
+    
     #check new settings
-    if(newSettings != ''): 
-        newSettingsPassedCheck = True
+    if(newSettings != ''): newSettingsPassedCheck = True
         
-    #check new email
-    if(newEmail != '' and newEmail != accountObj['email']):
-        newEmailPassedCheck = True
-
-    #check new name
-    if(newName != '' and newName != accountObj['name']): 
-        newNamePassedCheck = True
-
-    #check new phone
-    if(newPhone != '' and newPhone != accountObj['phone']): 
-        newPhonePassedCheck = True
-
-    #check new country
-    if(newCountry != '' and newCountry != accountObj['country']): 
-        newCountryPassedCheck = True
+    #check new credentials
+    if(newEmail != accountObj['email']): newEmailPassedCheck = True
+    if(newName != accountObj['name']): newNamePassedCheck = True
+    if(newPhone != accountObj['phone']): newPhonePassedCheck = True
+    if(newCountry != accountObj['country']): newCountryPassedCheck = True
 
     #check new password
     if(newPassword != '' and oldPassword != ''):
@@ -636,7 +435,9 @@ async def user_update_settings(request: Request):
     #check new username
     if(newUsername != '' and newUsername != accountObj['username']): 
         if(forbiddenNameCheck(newUsername) == False): return { "status": "update user settings failed: username is unavailable" }
+        
         elif(forbiddenCharacterCheck(newUsername) == False): return { "status": "update user settings failed: username is unavailable" }
+        
         else: 
             dbRequestCheckUsernameIsAvailable = dbUsers._fetch({"username": newUsername})
             if(dbRequestCheckUsernameIsAvailable[1]['paging']['size'] == 0): usernameIsAvailable = True
@@ -645,18 +446,20 @@ async def user_update_settings(request: Request):
     #check new domain
     if(newDomain != '' and newDomain != accountObj['domain']):
         if(forbiddenNameCheck(newDomain) == False): return { "status": "update user settings failed: domain is unavailable" }
+        
         elif(forbiddenCharacterCheck(newDomain) == False): return { "status": "update user settings failed: domain is unavailable" }
+        
         else:
             dbRequestCheckDomainIsAvailable = dbUsers._fetch({"domain": newDomain})
             if(dbRequestCheckDomainIsAvailable[1]['paging']['size'] == 0): domainIsAvailable = True
             else: return { "status": "update user settings failed: domain is unavailable" }
 
-    #update account
+    #update user settings & credentials
     try: 
-        #update account settings
+        #update user settings
         if(newSettingsPassedCheck == True): dbUsers.update({"settings": newSettings}, accountKey)
 
-        #update account credentials
+        #update user credentials
         if(usernameIsAvailable == True): dbUsers.update({"username": newUsername}, accountKey)
         if(domainIsAvailable == True): dbUsers.update({"domain": newDomain}, accountKey) 
         if(newEmailPassedCheck == True): dbUsers.update({"email": newEmail}, accountKey) 
@@ -665,21 +468,21 @@ async def user_update_settings(request: Request):
         if(newCountryPassedCheck == True): dbUsers.update({"country": newCountry}, accountKey)
         if(newPasswordPassedCheck == True): dbUsers.update({"password": newPassword}, accountKey) 
 
+        #return value
         return { "status": "update user settings successful" }
-        
-    except: 
-        return { "status": "update user settings failed" }
+    
+    #update error
+    except: return { "status": "update user settings failed" }
 
 
 
-# 23. reset user
-@app.post("/reset-user", tags=['users'])
+#10: reset user
+@app.post("/user-reset", tags=['users'])
 async def user_reset(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
-    dataObj = json.loads(dataObj) # parse json  
-    # dataObj = json.dumps(dataObj) # convert to json
+    dataObj = json.loads(dataObj) 
     
     #variables
     password = dataObj['password']
@@ -687,81 +490,52 @@ async def user_reset(request: Request):
     username = userInfo["username"]
     token = userInfo["token"]
     lastLogin = userInfo["lastLogin"]
-    defaultSettings = {
-        "buttonAbout": "false",
-		"buttonAboutText": "",
-		"buttonContact": "false",
-		"buttonFullscreen": "false",
-		"buttonSearch": "false",
-		"colorLoadingScreen": "#000000",
-		"colorNavBackground": "#000000",
-		"colorNavIcons": "#000000",
-		"colorSectionsBackground": "#000000",
-		"colorText": "#000000",
-		"loadingScreen": "false",
-		"loadingScreenUrl": "",
-		"modeSlideshow": "false",
-		"navIconSize": "medium",
-		"navIconType": "numbers",
-		"navPosition": "left",
-		"pageEnd": "false",
-		"pageEndText": "",
-		"pageEndTitle": "",
-		"pageIndex": "false",
-		"pageStart": "false",
-		"pageStartText": "",
-		"pageStartTitle": "",
-		"sectionBackgroundImage": "false",
-		"sectionBackgroundImageUrl": "",
-		"siteAccess": "public",
-		"sitePasswordProtected": "false",
-		"sitePasswordProtectedPassword": "",
-		"textSize": "medium",
-		"textStyle": "normal"
-    }
+    settings = defaultSettings
+    passwordPass = False
     # print(newSettings)
     # print(userInfo)
 
     #log
-    print("reset-user: " + username)
+    print("user-reset: " + username)
 
-    #fetch account data
+    #fetch user data
     dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
     accountObj = dbRequestAccountData[1]["items"][0]
     accountKey = accountObj["key"]
     # print(accountObj)
 
+    if(password == accountObj["password"]): passwordPass = True
+    else: return { "status": "update user reset failed: password is incorrect" }
+
     #reset account
     try: 
-        if(password == accountObj["password"]):
-            dbUsers.update({
-                "domain": "",
-                "email": "",
-                "name": "",
-                "phone": "",
-                "country": "",
-                "settings": defaultSettings,
-                "sections": [],
-                "categories": [],
-                "data": []},
-            accountKey)
-            return { "status": "update user reset successful" }
+        if(passwordPass == True):
+            dbUsers.update({ "domain": "",
+                             "email": "",
+                             "name": "",
+                             "phone": "",
+                             "country": "",
+                             "settings": settings,
+                             "sections": [],
+                             "categories": [],
+                             "data": [] },accountKey)
 
-        else: return { "status": "update user reset failed: password is incorrect" }
+        return { "status": "update user reset successful" }
+
         
-    except: 
-        return { "status": "update user reset failed" }
+    
+    #reset error
+    except: return { "status": "update user reset failed" }
 
 
 
-# 24. delete user
-@app.post("/delete-user", tags=['users'])
+#11: delete user
+@app.post("/user-delete", tags=['users'])
 async def user_delete(request: Request):
     #parse request data
     dataObj = await request.body()
     dataObj = dataObj.decode()
-    dataObj = json.loads(dataObj) # parse json  
-    # dataObj = json.dumps(dataObj) # convert to json
+    dataObj = json.loads(dataObj)  
     
     #variables
     password = dataObj['password']
@@ -772,9 +546,9 @@ async def user_delete(request: Request):
     print(userInfo)
     
     #log
-    print("delete-user: " + username)
+    print("user-delete: " + username)
 
-    #fetch account data
+    #fetch user data
     dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
     accountObj = dbRequestAccountData[1]["items"][0]
     accountKey = accountObj["key"]
@@ -786,32 +560,133 @@ async def user_delete(request: Request):
             dbUsers.delete(accountKey)
             return { "status": "delete user successful" }
         
-        else: 
-            return { "status": "delete user failed: password is incorrect" }
-        
-    except: 
-        return { "status": "update user reset failed" }
+        else: return { "status": "delete user failed: password is incorrect" }
+    
+    #delete error
+    except: return { "status": "update user reset failed" }
 
+
+
+#12: get specific domain
+@app.post("/domain-specific", tags=['domain'])
+async def domain_specific(request: Request):
+    #parse request data
+    dataObj = await request.body()
+    dataObj = dataObj.decode()
+    dataObj = json.loads(dataObj)
+
+    #debugging
+    # print(dataObj)
+
+    #variables
+    domain = dataObj["domain"]
+
+    #log
+    print("domain-specific: " + domain)
+
+    #fetch domain data
+    dbRequestAccountData = dbUsers._fetch({"domain": domain})
+    domainObj = dbRequestAccountData[1]["items"][0]
+    
+    #set domain data
+    domainSections = domainObj["sections"]
+    domainCategories = domainObj["categories"]
+    domainData = domainObj["data"]
+    domainSettings = domainObj["settings"]
+    domainEmail = domainObj["email"]
+    domainName = domainObj["name"]
+    domainPhone = domainObj["phone"]
+    domainCountry = domainObj["country"]
+    domainContact = ""
+    
+    #check if site is password protected
+    if(domainSettings["sitePasswordProtected"] == "true"):
+        return { "status": "domain is password protected", "domainName": domain }    
+
+    #check if contact button is enabled
+    if(domainSettings["buttonContact"] == "true"):
+        domainContact = { "email": domainEmail, "name": domainName, "phone": domainPhone, "country": domainCountry }
+        
+    #domain is not password protected
+    return { "status": "fetch specific domain successful",
+             "sections": domainSections, 
+             "categories": domainCategories, 
+             "data": domainData,
+             "settings": domainSettings,
+             "contact": domainContact }
+
+
+
+@app.post("/domain-protected", tags=['domain'])
+async def domain_protected(request: Request):
+    #parse request data
+    dataObj = await request.body()
+    dataObj = dataObj.decode()
+    dataObj = json.loads(dataObj)
+
+    #debugging
+    # print(dataObj)
+
+    #variables
+    domainName = dataObj["domainName"]
+    domainPassword = dataObj["domainPassword"]
+
+    #fetch domain data
+    dbRequestAccountData = dbUsers._fetch({"domain": domainName})
+    domainObj = dbRequestAccountData[1]["items"][0]
+    domainSections = domainObj["sections"]
+    domainCategories = domainObj["categories"]
+    domainData = domainObj["data"]
+    domainSettings = domainObj["settings"]
+    domainEmail = domainObj["email"]
+    domainName = domainObj["name"]
+    domainPhone = domainObj["phone"]
+    domainCountry = domainObj["country"]
+    domainContact = ""
+
+    # print("domain-protected: " + domain)
+    
+    if(domainPassword == domainObj["settings"]["sitePasswordProtectedPassword"]):
+        
+        #check if contact button is enabled
+        if(domainSettings["buttonContact"] == "true"):
+            domainContact = { "email": domainEmail, "name": domainName, "phone": domainPhone, "country": domainCountry }
+
+        return { "status": "fetch protected domain successful",
+             "sections": domainSections, 
+             "categories": domainCategories, 
+             "data": domainData,
+             "settings": domainSettings,
+             "contact": domainContact }
+
+    else: return {"status": "fetch protected domain failed" }
+    
 
 
 
 #------ functions -------#
 def forbiddenNameCheck(value):
+    #variables
     forbiddenNames = ["temp", "null", "domain", "empty", "blank", "undefined", "none", " "]
 
+    #check if value == name
     for item in forbiddenNames: 
         if(value == item): return False
 
+    #check if value is in name
     for item in forbiddenNames: 
         if(item in value): return False
 
 
 
 def forbiddenCharacterCheck(value):
+    #variables
     forbiddenCharacters = [" ", "!", "@", "$", "%", ",", ".", "<", ">", "'", "\"", "_", "-", "?", "|", "-", "^", "`", "/", "\\"]
 
+    #check if value == name
     for item in forbiddenCharacters: 
         if (value == item): return False
 
+    #check if value is in name
     for item in forbiddenCharacters: 
         if (item in value): return False
