@@ -46,10 +46,12 @@ defaultSettings = {
     "pageEnd": "false",
     "pageEndText": "",
     "pageEndTitle": "",
+    "pageEndBackgroundImage": "",
     "pageIndex": "false",
     "pageStart": "false",
     "pageStartText": "",
     "pageStartTitle": "",
+    "pageStartBackgroundImage": "",
     "sectionBackgroundImage": "false",
     "sectionBackgroundImageUrl": "",
     "siteAccess": "public",
@@ -357,14 +359,17 @@ async def user_update_sections(request: Request):
     dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
     accountObj = dbRequestAccountData[1]["items"][0]
     accountKey = accountObj["key"]
-    
+    # accountSectionsOld = accountObj["sections"]
+        
     #update user sections & data
     try: 
-        dbUsers.update({"sections": newSections}, accountKey); 
+        dbUsers.update({"sections": newSections}, accountKey)
+        dbRequestAccountData = dbUsers._fetch({"username": username, "token": token, "lastLogin": lastLogin})
+        cleanObjects(dbRequestAccountData, accountKey, "updateSections") #remove associated categories and data
         return { "status": "update user sections successful" }
     
     #update error
-    except: 
+    except:
         return { "status": "update user sections failed" }
 
 
@@ -404,6 +409,11 @@ async def user_update_settings(request: Request):
     print(newCredentials)
     # print(newSettings)
     # print(userInfo)
+
+    #convert to lower case
+    newUsername = newUsername.lower()
+    newDomain = newDomain.lower()
+    newEmail = newEmail.lower()
 
     #log
     print("user-update-settings: " + username)
@@ -579,41 +589,57 @@ async def domain_specific(request: Request):
     # print(dataObj)
 
     #variables
-    domain = dataObj["domain"]
+    data = dataObj["data"]
+    domain = data["domain"]
+    section = data["section"]
+    category = data["category"]
+    route = domain + "/" + section + "/" + category
+    routeParams = data
+    print(domain)
+    print(route)
 
     #log
     print("domain-specific: " + domain)
 
     #fetch domain data
     dbRequestAccountData = dbUsers._fetch({"domain": domain})
-    domainObj = dbRequestAccountData[1]["items"][0]
-    
-    #set domain data
-    domainSections = domainObj["sections"]
-    domainCategories = domainObj["categories"]
-    domainData = domainObj["data"]
-    domainSettings = domainObj["settings"]
-    domainEmail = domainObj["email"]
-    domainName = domainObj["name"]
-    domainPhone = domainObj["phone"]
-    domainCountry = domainObj["country"]
-    domainContact = ""
-    
-    #check if site is password protected
-    if(domainSettings["sitePasswordProtected"] == "true"):
-        return { "status": "domain is password protected", "domainName": domain }    
+    domainObj = dbRequestAccountData[1]["paging"]["size"]
 
-    #check if contact button is enabled
-    if(domainSettings["buttonContact"] == "true"):
-        domainContact = { "email": domainEmail, "name": domainName, "phone": domainPhone, "country": domainCountry }
+    #domain does not exist
+    if(dbRequestAccountData[1]["paging"]["size"] == 0):
+        return { "status": "domain does not exist" }
+    
+    #domain exists
+    else:
+        domainObj = dbRequestAccountData[1]["items"][0]
+ 
+        #set domain data
+        domainSections = domainObj["sections"]
+        domainCategories = domainObj["categories"]
+        domainData = domainObj["data"]
+        domainSettings = domainObj["settings"]
+        domainEmail = domainObj["email"]
+        domainName = domainObj["name"]
+        domainPhone = domainObj["phone"]
+        domainCountry = domainObj["country"]
+        domainContact = ""
         
-    #domain is not password protected
-    return { "status": "fetch specific domain successful",
-             "sections": domainSections, 
-             "categories": domainCategories, 
-             "data": domainData,
-             "settings": domainSettings,
-             "contact": domainContact }
+        #check if site is password protected
+        if(domainSettings["sitePasswordProtected"] == "true"):
+            return { "status": "domain is password protected", "domainName": domain }    
+
+        #check if contact button is enabled
+        if(domainSettings["buttonContact"] == "true"):
+            domainContact = { "email": domainEmail, "name": domainName, "phone": domainPhone, "country": domainCountry }
+            
+        #domain is not password protected
+        return { "status": "fetch specific domain successful",
+                "sections": domainSections, 
+                "categories": domainCategories, 
+                "data": domainData,
+                "settings": domainSettings,
+                "contact": domainContact,
+                "route": routeParams }
 
 
 
@@ -681,12 +707,60 @@ def forbiddenNameCheck(value):
 
 def forbiddenCharacterCheck(value):
     #variables
-    forbiddenCharacters = [" ", "!", "@", "$", "%", ",", ".", "<", ">", "'", "\"", "_", "-", "?", "|", "-", "^", "`", "/", "\\"]
+    forbiddenCharacters = [" ", "!", "@", "$", "%", ",", ".", "<", ">", "'", "\"", "_", "?", "|", "^", "`", "/", "\\"] #removed from list: "-"
 
     #check if value == name
-    for item in forbiddenCharacters: 
+    for item in forbiddenCharacters:
         if (value == item): return False
 
     #check if value is in name
-    for item in forbiddenCharacters: 
+    for item in forbiddenCharacters:
         if (item in value): return False
+
+
+
+def cleanObjects(dbRequestAccountData, accountKey, type):
+    #clean categories & data
+    accountObj = dbRequestAccountData[1]["items"][0]
+    accountSections = json.loads(str(accountObj["sections"]).replace("'", "\"").replace("None", "\"None\"").replace("none", "\"none\""))
+    accountCategories = json.loads(str(accountObj["categories"]).replace("'", "\"").replace("None", "\"None\"").replace("none", "\"none\""))
+    accountData = accountObj["data"]    
+    totalSections = len(accountSections)
+    totalCategories = len(accountCategories)
+    totalData = len(accountData)
+    arraySections = []
+    arrayCategories = []
+    arrayData = []
+    arrayCategoriesNew = []
+    arrayDataNew = []
+
+    # print("totalSections: " + str(totalSections))
+    # print("totalCategories: " + str(totalCategories))
+    # print("totalData: " + str(totalData))
+
+    for item in accountSections:
+        arraySections.append(item["title"])
+
+    for item in accountCategories:
+        arrayCategories.append(item)
+
+    for item in accountData:
+        arrayData.append(item)
+
+    # print(arraySections)
+    # print(arrayCategories)
+    # print(arrayData)
+    
+    #remove categories
+    for s in arraySections:
+        for c in arrayCategories:
+            if(c["section"] == s): arrayCategoriesNew.append(c)
+
+    #remove data
+    for s in arraySections:
+        for d in arrayData:
+            if(d["section"] == s): arrayDataNew.append(d)
+    
+    if(type == "updateSections"):
+        dbUsers.update({"categories": arrayCategoriesNew}, accountKey)
+        dbUsers.update({"data": arrayDataNew}, accountKey)
