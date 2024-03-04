@@ -81,12 +81,14 @@ def _():
     user_reset
     user_delete
 
-    #routes domain (1)
+    #routes domain (2)
     domain_specific
+    domain_protected
 
-    #standalone functions (2)
+    #standalone functions (3)
     forbiddenCharacterCheck
     forbiddenNameCheck
+    cleanObjects
 
 
 
@@ -624,6 +626,10 @@ async def domain_specific(request: Request):
         domainCountry = domainObj["country"]
         domainContact = ""
         
+        #check if site is private
+        if(domainSettings["siteAccess"] == "private"):
+            return { "status": "domain does not exist", "domainName": domain }
+
         #check if site is password protected
         if(domainSettings["sitePasswordProtected"] == "true"):
             return { "status": "domain is password protected", "domainName": domain }    
