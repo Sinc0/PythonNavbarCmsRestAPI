@@ -1,0 +1,58 @@
+[
+    {
+        "backgroundImage": "None",
+        "hidden": "false",
+        "pos": "1",
+        "section": "Example Texts",
+        "title": "Singleline"
+    },
+    {
+        "backgroundImage": "null",
+        "hidden": "false",
+        "pos": "1",
+        "section": "Example Lists",
+        "title": "Textlist"
+    },
+    {
+        "backgroundImage": "null",
+        "hidden": "false",
+        "pos": "1",
+        "section": "Example Galleries",
+        "title": "Animals"
+    },
+    {
+        "backgroundImage": "None",
+        "hidden": "false",
+        "pos": "2",
+        "section": "Example Texts",
+        "title": "Multiline"
+    },
+    {
+        "backgroundImage": "null",
+        "hidden": "false",
+        "pos": "2",
+        "section": "Example Lists",
+        "title": "Linklist"
+    },
+    {
+        "backgroundImage": "null",
+        "hidden": "false",
+        "pos": "2",
+        "section": "Example Galleries",
+        "title": "Buildings"
+    },
+    {
+        "backgroundImage": "null",
+        "hidden": "false",
+        "pos": "3",
+        "section": "Example Lists",
+        "title": "Timeline"
+    },
+    {
+        "backgroundImage": "null",
+        "hidden": "false",
+        "pos": "3",
+        "section": "Example Galleries",
+        "title": "Vehicles"
+    }
+]

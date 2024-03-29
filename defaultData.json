@@ -1,0 +1,58 @@
+[
+    {
+        "category": "Singleline",
+        "rows": [
+            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"singleline\",\"title\":\"Example Title\",\"data\":\"This is single line text example\"}"
+        ],
+        "section": "Example Texts"
+    },
+    {
+        "category": "Textlist",
+        "rows": [
+            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"textlist\",\"title\":\"List Title\",\"data\":\"[{'pos':'1','text':'Item 1'},{'pos':'2','text':'Item 2'},{'pos':'3','text':'Item 3'}]\"}"
+        ],
+        "section": "Example Lists"
+    },
+    {
+        "category": "Animals",
+        "rows": [
+            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"galleryImages\",\"title\":\"Gallery Title\",\"data\":\"[{'pos':'1','image':'/temp.jpeg','description':'Image 1'},{'pos':'2','image':'/temp.jpg','description':'Image 2'},{'pos':'3','image':'/temp.jpg','description':'Image 3'}]\"}"
+        ],
+        "section": "Example Galleries"
+    },
+    {
+        "category": "Multiline",
+        "rows": [
+            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"multiline\",\"title\":\"Example Title\",\"data\":\"[{'pos':'1','text':'Vitae auctor eu augue ut lectus arcu. Augue lacus viverra vitae congue eu. Sagittis vitae et leo duis ut diam quam nulla porttitor. Magna etiam tempor orci eu lobortis elementum. Eleifend donec pretium vulputate sapien nec sagittis aliquam. In iaculis nunc sed augue lacus viverra. Vitae suscipit tellus mauris a diam maecenas sed. Tincidunt lobortis feugiat vivamus at augue eget arcu. Quam vulputate dignissim suspendisse in est. Mattis vulputate enim nulla aliquet porttitor lacus.'},{'pos':'2','text':'Faucibus pulvinar elementum integer enim neque volutpat ac. Eget lorem dolor sed viverra ipsum nunc aliquet bibendum enim. A diam maecenas sed enim ut sem viverra. Justo laoreet sit amet cursus sit amet. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Porttitor massa id neque aliquam vestibulum. Vestibulum lorem sed risus ultricies tristique. Nulla pharetra diam sit amet nisl suscipit adipiscing bibendum. Turpis nunc eget lorem dolor sed viverra. Fermentum iaculis eu non diam phasellus vestibulum lorem sed risus. Semper risus in hendrerit gravida.'},{'pos':'3','text':'Malesuada pellentesque elit eget gravida cum. Ornare lectus sit amet est placerat in egestas erat imperdiet. Magna sit amet purus gravida. Sollicitudin tempor id eu nisl nunc mi. Ante in nibh mauris cursus mattis. Sit amet dictum sit amet justo donec. In nulla posuere sollicitudin aliquam. Viverra aliquet eget sit amet tellus cras adipiscing enim. Risus sed vulputate odio ut enim blandit. Tellus pellentesque eu tincidunt tortor aliquam. Risus feugiat in ante metus dictum at tempor commodo. Vestibulum rhoncus est pellentesque elit ullamcorper. Dignissim enim sit amet venenatis urna cursus eget nunc scelerisque.'}]\"}"
+        ],
+        "section": "Example Texts"
+    },
+    {
+        "category": "Linklist",
+        "rows": [
+            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"linklist\",\"title\":\"List Title\",\"data\":\"[{'pos':'1','text':'Spotify','link':'https://open.spotify.com/'},{'pos':'2','text':'Github','link':'https://github.com/'},{'pos':'3','text':'Imgur','link':'https://imgur.com/'}]\"}"
+        ],
+        "section": "Example Lists"
+    },
+    {
+        "category": "Buildings",
+        "rows": [
+            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"galleryImages\",\"title\":\"Gallery Title\",\"data\":\"[{'pos':'1','image':'/temp.jpg','description':'Image 1'},{'pos':'2','image':'/temp.jpg','description':'Image 2'},{'pos':'3','image':'/temp.jpg','description':'Image 3'}]\"}"
+        ],
+        "section": "Example Galleries"
+    },
+    {
+        "category": "Timeline",
+        "rows": [
+            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"timeline\",\"title\":\"Timeline Title\",\"data\":\"[{'pos':'1','text':'Example Text','year':'2020'},{'pos':'2','text':'Example Text','year':'2021'},{'pos':'3','text':'Example Text','year':'2023'}]\"}"
+        ],
+        "section": "Example Lists"
+    },
+    {
+        "category": "Vehicles",
+        "rows": [
+            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"galleryImages\",\"title\":\"Gallery Title\",\"data\":\"[{'pos':'1','image':'/temp.jpg','description':'Image 1'},{'pos':'2','image':'/temp.jpg','description':'Image 2'},{'pos':'3','image':'/temp.jpg','description':'Image 3'}]\"}"
+        ],
+        "section": "Example Galleries"
+    }
+]

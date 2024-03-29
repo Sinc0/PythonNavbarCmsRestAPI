@@ -3,212 +3,54 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
 from deta import Deta
-from fastapi.responses import ORJSONResponse
 import json
 import datetime
 import uuid
+# from fastapi.responses import ORJSONResponse
+# from pprint import pprint
 # import requests
 #from fastapi.responses import JSONResponse
 
 
 
+#------ GLOBALS ------#
+PROJECT_DATA_KEY = ""
+DEFAULT_DOMAIN = ""
+DEFAULT_SETTINGS = ""
+DEFAULT_SECTIONS = ""
+DEFAULT_CATEGORIES = ""
+DEFAULT_DATA = ""
+dbUsers = ""
+
+
+
 #------ START ------#
-app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]) # CORS settings
-dbRoot = Deta("") # project data key
-
-
-
-#------ DB ------#
+with open('configs.json') as data: PROJECT_DATA_KEY = json.load(data)["PROJECT_DATA_KEY"]
+with open('configs.json') as data: PROJECT_DATA_KEY = json.load(data)["DEFAULT_DOMAIN"]
+with open('defaultSettings.json') as data: DEFAULT_SETTINGS = json.load(data)
+with open('defaultSections.json') as data: DEFAULT_SECTIONS = json.load(data)
+with open('defaultCategories.json') as data: DEFAULT_CATEGORIES = json.load(data)
+with open('defaultData.json') as data: DEFAULT_DATA = json.load(data)
+dbRoot = Deta(PROJECT_DATA_KEY)
 dbUsers = dbRoot.Base("users")
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware, 
+    allow_credentials=True, 
+    allow_origins=["*"], 
+    allow_methods=["*"], 
+    allow_headers=["*"]
+)
 
-
-
-#------ VARIABLES ------#
-defaultSettings = {
-    "buttonAbout": "true",
-    "buttonAboutText": "this is a about text example",
-    "buttonContact": "true",
-    "buttonFullscreen": "true",
-    "buttonSearch": "true",
-    "colorLoadingScreen": "#000000",
-    "colorNavBackground": "transparent",
-    "colorNavIcons": "transparent",
-    "colorNavIconsText": "#000000",
-    "colorSectionBackground": "red",
-    "colorText": "#ffffff",
-    "loadingScreen": "true",
-    "loadingScreenUrl": "",
-    "modeSlideshow": "true",
-    "navIconSize": "small",
-    "navIconType": "rounded",
-    "navPosition": "left",
-    "pageEnd": "true",
-    "pageEndText": "this is a end text example",
-    "pageEndTitle": "End",
-    "pageEndBackgroundImage": "",
-    "pageIndex": "false",
-    "pageStart": "true",
-    "pageStartText": "this is a start text example",
-    "pageStartTitle": "Start",
-    "pageStartBackgroundImage": "",
-    "sectionBackgroundImage": "false",
-    "sectionBackgroundImageUrl": "",
-    "siteAccess": "public",
-    "sitePasswordProtected": "false",
-    "sitePasswordProtectedPassword": "",
-    "textSize": "medium",
-    "textStyle": "normal"
-}
-defaultData = [
-    {
-        "category": "Singleline",
-        "rows": [
-            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"singleline\",\"title\":\"Example Title\",\"data\":\"This is single line text example\"}"
-        ],
-        "section": "Text Examples"
-    },
-    {
-        "category": "Textlist",
-        "rows": [
-            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"textlist\",\"title\":\"List Title\",\"data\":\"[{'pos':'1','text':'Item 1'},{'pos':'2','text':'Item 2'},{'pos':'3','text':'Item 3'}]\"}"
-        ],
-        "section": "List Examples"
-    },
-    {
-        "category": "Animals",
-        "rows": [
-            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"galleryImages\",\"title\":\"Gallery Title\",\"data\":\"[{'pos':'1','image':'/temp.jpeg','description':'Image 1'},{'pos':'2','image':'/temp.jpg','description':'Image 2'},{'pos':'3','image':'/temp.jpg','description':'Image 3'}]\"}"
-        ],
-        "section": "Image Gallery Examples"
-    },
-    {
-        "category": "Multiline",
-        "rows": [
-            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"multiline\",\"title\":\"Example Title\",\"data\":\"[{'pos':'1','text':'Vitae auctor eu augue ut lectus arcu. Augue lacus viverra vitae congue eu. Sagittis vitae et leo duis ut diam quam nulla porttitor. Magna etiam tempor orci eu lobortis elementum. Eleifend donec pretium vulputate sapien nec sagittis aliquam. In iaculis nunc sed augue lacus viverra. Vitae suscipit tellus mauris a diam maecenas sed. Tincidunt lobortis feugiat vivamus at augue eget arcu. Quam vulputate dignissim suspendisse in est. Mattis vulputate enim nulla aliquet porttitor lacus.'},{'pos':'2','text':'Faucibus pulvinar elementum integer enim neque volutpat ac. Eget lorem dolor sed viverra ipsum nunc aliquet bibendum enim. A diam maecenas sed enim ut sem viverra. Justo laoreet sit amet cursus sit amet. Gravida cum sociis natoque penatibus et magnis dis parturient montes. Porttitor massa id neque aliquam vestibulum. Vestibulum lorem sed risus ultricies tristique. Nulla pharetra diam sit amet nisl suscipit adipiscing bibendum. Turpis nunc eget lorem dolor sed viverra. Fermentum iaculis eu non diam phasellus vestibulum lorem sed risus. Semper risus in hendrerit gravida.'},{'pos':'3','text':'Malesuada pellentesque elit eget gravida cum. Ornare lectus sit amet est placerat in egestas erat imperdiet. Magna sit amet purus gravida. Sollicitudin tempor id eu nisl nunc mi. Ante in nibh mauris cursus mattis. Sit amet dictum sit amet justo donec. In nulla posuere sollicitudin aliquam. Viverra aliquet eget sit amet tellus cras adipiscing enim. Risus sed vulputate odio ut enim blandit. Tellus pellentesque eu tincidunt tortor aliquam. Risus feugiat in ante metus dictum at tempor commodo. Vestibulum rhoncus est pellentesque elit ullamcorper. Dignissim enim sit amet venenatis urna cursus eget nunc scelerisque.'}]\"}"
-        ],
-        "section": "Text Examples"
-    },
-    {
-        "category": "Linklist",
-        "rows": [
-            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"linklist\",\"title\":\"List Title\",\"data\":\"[{'pos':'1','text':'Spotify','link':'https://open.spotify.com/'},{'pos':'2','text':'Github','link':'https://github.com/'},{'pos':'3','text':'Imgur','link':'https://imgur.com/'}]\"}"
-        ],
-        "section": "List Examples"
-    },
-    {
-        "category": "Buildings",
-        "rows": [
-            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"galleryImages\",\"title\":\"Gallery Title\",\"data\":\"[{'pos':'1','image':'/temp.jpg','description':'Image 1'},{'pos':'2','image':'/temp.jpg','description':'Image 2'},{'pos':'3','image':'/temp.jpg','description':'Image 3'}]\"}"
-        ],
-        "section": "Image Gallery Examples"
-    },
-    {
-        "category": "Timeline",
-        "rows": [
-            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"timeline\",\"title\":\"Timeline Title\",\"data\":\"[{'pos':'1','text':'Example Text','year':'2020'},{'pos':'2','text':'Example Text','year':'2021'},{'pos':'3','text':'Example Text','year':'2023'}]\"}"
-        ],
-        "section": "List Examples"
-    },
-    {
-        "category": "Vehicles",
-        "rows": [
-            "{\"pos\":\"1\",\"hidden\":\"false\",\"type\":\"galleryImages\",\"title\":\"Gallery Title\",\"data\":\"[{'pos':'1','image':'/temp.jpg','description':'Image 1'},{'pos':'2','image':'/temp.jpg','description':'Image 2'},{'pos':'3','image':'/temp.jpg','description':'Image 3'}]\"}"
-        ],
-        "section": "Image Gallery Examples"
-    }
-]
-defaultCategories = [
-    {
-        "backgroundImage": "None",
-        "hidden": "false",
-        "pos": "1",
-        "section": "Text Examples",
-        "title": "Singleline"
-    },
-    {
-        "backgroundImage": "null",
-        "hidden": "false",
-        "pos": "1",
-        "section": "List Examples",
-        "title": "Textlist"
-    },
-    {
-        "backgroundImage": "null",
-        "hidden": "false",
-        "pos": "1",
-        "section": "Image Gallery Examples",
-        "title": "Animals"
-    },
-    {
-        "backgroundImage": "None",
-        "hidden": "false",
-        "pos": "2",
-        "section": "Text Examples",
-        "title": "Multiline"
-    },
-    {
-        "backgroundImage": "null",
-        "hidden": "false",
-        "pos": "2",
-        "section": "List Examples",
-        "title": "Linklist"
-    },
-    {
-        "backgroundImage": "null",
-        "hidden": "false",
-        "pos": "2",
-        "section": "Image Gallery Examples",
-        "title": "Buildings"
-    },
-    {
-        "backgroundImage": "null",
-        "hidden": "false",
-        "pos": "3",
-        "section": "List Examples",
-        "title": "Timeline"
-    },
-    {
-        "backgroundImage": "null",
-        "hidden": "false",
-        "pos": "3",
-        "section": "Image Gallery Examples",
-        "title": "Vehicles"
-    }
-]
-defaultSections = [		
-    {
-        "hidden": "false",
-        "oldTitle": "Texts Examples",
-        "pos": "1",
-        "title": "Text Examples"
-    },
-    {
-        "hidden": "false",
-        "oldTitle": "Lists",
-        "pos": "2",
-        "title": "List Examples"
-    },
-    {
-        "hidden": "false",
-        "oldTitle": "Image Gallery Example",
-        "pos": "3",
-        "title": "Image Gallery Examples"
-    }
-]
-# origins = ["http://localhost","http://localhost:8080"]
 
 
 #------ QUICK NAV ------#
 def _():
-    #routes error (1)
+    #routes
     root
-
-    #routes users (12)
     user_all
     user_add
     user_sign_in
-    # user_sign_out
     user_specific
     user_update_data
     user_update_categories
@@ -216,12 +58,10 @@ def _():
     user_update_settings
     user_reset
     user_delete
-
-    #routes domain (2)
     domain_specific
     domain_protected
 
-    #standalone functions (3)
+    #functions
     forbiddenCharacterCheck
     forbiddenNameCheck
     cleanObjects
@@ -229,12 +69,12 @@ def _():
 
 
 #------ ROUTES ------#
-@app.get("/", tags=['root']) #response_class=JSONResponse #ORJSONResponse([{"root": "there is nothing here"}])
+@app.get("/", tags=['root']) #response_class=JSONResponse
 async def root(): return { "data": "there is nothing here" }
 
 
 
-#1: user all
+#route: user all
 @app.get("/user-all", tags=['users']) 
 async def user_all():
     #fetch all users
@@ -245,7 +85,7 @@ async def user_all():
 
 
 
-#2: add user
+#route: add user
 @app.post("/user-add", tags=['users'])
 async def user_add(request: Request):
     #parse request data
@@ -260,10 +100,10 @@ async def user_add(request: Request):
     #set user obj
     dataObj["createdAt"] = str(datetime.datetime.now())[:-7]
     dataObj["id"] = str(uuid.uuid4()).replace("-", "")
-    dataObj["sections"] = defaultSections
-    dataObj["categories"] = defaultCategories
-    dataObj["data"] = defaultData
-    dataObj["settings"] = defaultSettings
+    dataObj["sections"] = DEFAULT_SECTIONS
+    dataObj["categories"] = DEFAULT_CATEGORIES
+    dataObj["data"] = DEFAULT_DATA
+    dataObj["settings"] = DEFAULT_SETTINGS
     dataObj["token"] = ""
     dataObj["domain"] = str(uuid.uuid4()).replace("-", "")[:20]
     dataObj["email"] = "example@email.com"
@@ -297,7 +137,7 @@ async def user_add(request: Request):
 
 
 
-#3: sign in user
+#route: sign in user
 @app.post("/user-sign-in", tags=['users'])
 async def user_sign_in(request: Request):
     #parse request data
@@ -339,7 +179,7 @@ async def user_sign_in(request: Request):
 
 
 
-#5: get specific user
+#route: get specific user
 @app.post("/user-specific", tags=['users'])
 async def user_specific(request: Request):
     #parse request data
@@ -388,7 +228,7 @@ async def user_specific(request: Request):
 
 
 
-#6: update user data
+#route: update user data
 @app.post("/user-update-data", tags=['users'])
 async def user_update_data(request: Request):
     #parse request data
@@ -423,7 +263,7 @@ async def user_update_data(request: Request):
 
 
 
-#7: update user categories
+#route: update user categories
 @app.post("/user-update-categories", tags=['users'])
 async def user_update_categories(request: Request):
     #parse request data
@@ -464,7 +304,7 @@ async def user_update_categories(request: Request):
 
 
 
-#8: update user sections
+#route: update user sections
 @app.post("/user-update-sections", tags=['users'])
 async def user_update_sections(request: Request):
     #parse request data
@@ -503,7 +343,7 @@ async def user_update_sections(request: Request):
 
 
 
-#9: update user settings
+#route: update user settings
 @app.post("/user-update-settings", tags=['users'])
 async def user_update_settings(request: Request):
     #parse request data
@@ -615,7 +455,7 @@ async def user_update_settings(request: Request):
 
 
 
-#10: reset user
+#route: reset user
 @app.post("/user-reset", tags=['users'])
 async def user_reset(request: Request):
     #parse request data
@@ -629,7 +469,7 @@ async def user_reset(request: Request):
     username = userInfo["username"]
     token = userInfo["token"]
     lastLogin = userInfo["lastLogin"]
-    settings = defaultSettings
+    settings = DEFAULT_SETTINGS
     passwordPass = False
     # print(newSettings)
     # print(userInfo)
@@ -668,7 +508,7 @@ async def user_reset(request: Request):
 
 
 
-#11: delete user
+#route: delete user
 @app.post("/user-delete", tags=['users'])
 async def user_delete(request: Request):
     #parse request data
@@ -706,7 +546,7 @@ async def user_delete(request: Request):
 
 
 
-#12: get specific domain
+#route: get specific domain
 @app.post("/domain-specific", tags=['domain'])
 async def domain_specific(request: Request):
     #parse request data
@@ -776,6 +616,7 @@ async def domain_specific(request: Request):
 
 
 
+#route: domain protected
 @app.post("/domain-protected", tags=['domain'])
 async def domain_protected(request: Request):
     #parse request data
@@ -819,7 +660,6 @@ async def domain_protected(request: Request):
              "contact": domainContact }
 
     else: return {"status": "fetch protected domain failed" }
-    
 
 
 
