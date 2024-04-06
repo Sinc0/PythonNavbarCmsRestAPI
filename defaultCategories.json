@@ -1,58 +1,23 @@
 [
     {
-        "backgroundImage": "None",
+        "backgroundImage": "https://nacoma.app/ep_assets/default-african-animals-lion-bg.jpg",
         "hidden": "false",
         "pos": "1",
-        "section": "Example Texts",
-        "title": "Singleline"
+        "section": "Lion",
+        "title": "Lion"
     },
     {
-        "backgroundImage": "null",
+        "backgroundImage": "https://nacoma.app/ep_assets/default-african-animals-cheetah-bg.jpg",
         "hidden": "false",
         "pos": "1",
-        "section": "Example Lists",
-        "title": "Textlist"
+        "section": "Cheetah",
+        "title": "Cheetah"
     },
     {
-        "backgroundImage": "null",
+        "backgroundImage": "https://nacoma.app/ep_assets/default-african-animals-elephant-bg.webp",
         "hidden": "false",
         "pos": "1",
-        "section": "Example Galleries",
-        "title": "Animals"
-    },
-    {
-        "backgroundImage": "None",
-        "hidden": "false",
-        "pos": "2",
-        "section": "Example Texts",
-        "title": "Multiline"
-    },
-    {
-        "backgroundImage": "null",
-        "hidden": "false",
-        "pos": "2",
-        "section": "Example Lists",
-        "title": "Linklist"
-    },
-    {
-        "backgroundImage": "null",
-        "hidden": "false",
-        "pos": "2",
-        "section": "Example Galleries",
-        "title": "Buildings"
-    },
-    {
-        "backgroundImage": "null",
-        "hidden": "false",
-        "pos": "3",
-        "section": "Example Lists",
-        "title": "Timeline"
-    },
-    {
-        "backgroundImage": "null",
-        "hidden": "false",
-        "pos": "3",
-        "section": "Example Galleries",
-        "title": "Vehicles"
+        "section": "Elephant",
+        "title": "Elephant"
     }
 ]
