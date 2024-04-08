@@ -11,18 +11,18 @@
 - [Deta](https://deta.space/developers)
 
 ### Code
+- [File - Main](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/main.py)
+- [File - Default User Sections](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/defaultSections.json)
+- [File - Default User Categories](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/defaultCategories.json)
+- [File - Default User Data](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/defaultData.json)
+- [File - Default User Settings](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/defaultSettings.json)
+###
 - [Section - Imports](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/main.py#L1)
 - [Section - Globals](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/main.py#L12)
 - [Section - Start](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/main.py#L23)
 - [Section - Quick Nav](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/main.py#L43)
 - [Section - Routes](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/main.py#L68)
 - [Section - Functions](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/main.py#L738)
-###
-- [File - Main](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/main.py)
-- [File - Default User Sections](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/defaultSections.json)
-- [File - Default User Categories](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/defaultCategories.json)
-- [File - Default User Data](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/defaultData.json)
-- [File - Default User Settings](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/defaultSettings.json)
 ###
 - [General - /](https://github.com/Sinc0/PythonCmsRestAPI/blob/master/main.py#L69-L71)
 ###
