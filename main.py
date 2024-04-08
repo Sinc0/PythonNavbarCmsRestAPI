@@ -735,7 +735,7 @@ async def domain_private(request: Request):
 
 
 
-#------ functions -------#
+#------ FUNCTIONS -------#
 def forbiddenNameCheck(value):
 
     #variables
